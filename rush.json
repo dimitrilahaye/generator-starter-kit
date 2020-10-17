@@ -26,9 +26,9 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "4.14.4",
+  // "pnpmVersion": "4.14.4",
 
-  // "npmVersion": "4.5.0",
+  "npmVersion": "6.14.6",
   // "yarnVersion": "1.9.4",
 
   /**
@@ -172,8 +172,8 @@
    * To remove these restrictions, you could set projectFolderMinDepth=1
    * and set projectFolderMaxDepth to a large number.
    */
-  // "projectFolderMinDepth": 2,
-  // "projectFolderMaxDepth": 2,
+  "projectFolderMinDepth": 1,
+  "projectFolderMaxDepth": 200,
 
   /**
    * Today the npmjs.com registry enforces fairly strict naming rules for packages, but in the early
@@ -431,10 +431,25 @@
     //   "reviewCategory": "production"
     // },
     // 
-    // {
-    //   "packageName": "my-toolchain",
-    //   "projectFolder": "tools/my-toolchain",
-    //   "reviewCategory": "tools"
-    // }
+    {
+      "packageName": "react-vanilla",
+      "projectFolder": "react-vanilla",
+      "reviewCategory": "reactVanilla"
+    }, 
+    {
+      "packageName": "react-typescript",
+      "projectFolder": "react-typescript",
+      "reviewCategory": "reactTypescript"
+    }, 
+    {
+      "packageName": "express-vanilla",
+      "projectFolder": "express-vanilla",
+      "reviewCategory": "expressVanilla"
+    }, 
+    {
+      "packageName": "express-typescript",
+      "projectFolder": "express-typescript",
+      "reviewCategory": "expressTypescript"
+    },
   ]
 }
