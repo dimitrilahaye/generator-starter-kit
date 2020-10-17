@@ -1,10 +1,16 @@
-## react typescript
-https://github.com/microsoft/TypeScript-React-Starter
-
-## express typescript
-https://medium.com/@sunnystatue/setup-nodejs-express-typescript-project-enabled-live-edit-when-debugging-4fea0f51dbb3
-https://github.com/alireza-bonab/nodejs-express-typescript-scaffold
-> npm install nodemon concurrently -g
-
-## install rush
+## install global deps
+npm install -g create-react-app
+npm install -g express-generator
+npm install -g nodemon concurrently
 npm install -g @microsoft/rush
+
+## rush main commands
+
+### after each project package.json modifications
+rush update
+
+### after pulled last changes
+rush rebuild
+
+### run npm build for each project
+rush build
