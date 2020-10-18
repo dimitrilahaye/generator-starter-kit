@@ -108,7 +108,6 @@ module.exports = class extends Generator {
                 this.spawnCommand('rush build');
             });
         });
-        // TODO: rush build
     }
 
     end() {
