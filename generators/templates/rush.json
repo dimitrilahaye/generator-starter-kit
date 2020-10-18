@@ -14,5 +14,5 @@
     "postRushBuild": []
   },
   "variants": [],
-  "projects": <%= projectsRushConf =>
+  "projects": []
 }

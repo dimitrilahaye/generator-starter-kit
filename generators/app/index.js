@@ -86,17 +86,32 @@ module.exports = class extends Generator {
         });
     }
 
-    install() {
+    async install() {
         this.log(log.info('Setting Rush'));
-        // TODO: go to projects folder
-        // TODO: copy generators/templates/rush.json into projects folder
-        // TODO: register the projects in the rush.json
-        // TODO: rush init
+        process.chdir(this.destinationPath());
+        this.spawnCommand('rush init --overwrite-existing').on('close', () => {
+            const projectsRushConf = [];
+            const { projects, ...apps } = this.conf;
+            for (let appName in apps) {
+                const app = apps[appName];
+                projectsRushConf.push({
+                    "packageName": app.applicationName,
+                    "projectFolder": app.applicationName
+                });
+            }
+            const rush = fs.readFileSync(path.join(__dirname, '..', 'templates', 'rush.json'), 'utf8');
+            const rushConfig = JSON.parse(rush);
+            rushConfig.projects.push(...projectsRushConf);
+            fs.writeFileSync(this.destinationPath('rush.json'), JSON.stringify(rushConfig));
+            fs.unlinkSync(this.destinationPath('common', 'config', 'rush', 'pnpmfile.js'));
+            this.spawnCommand('rush update').on('close', () => {
+                this.spawnCommand('rush build');
+            });
+        });
         // TODO: rush build
     }
 
     end() {
-        // Happy coding
         this.log(log.success('Your bootstraping is finished. Happy coding!'));
     }
 
