@@ -8,32 +8,11 @@ npm install -g @microsoft/rush  # needed to the rush monorepo part.
 ## how to run the starter-kit generator in local
 
 ```
-cd /your/generator-starter-kit/root
-npm install # the first time
+cd generator-starter-kit
+npm install
 npm link
+cd /my-project
 yo starter-kit
 ```
 
-> if you want to skip yeoman prompting, copy compose.yaml.example then rename it `compose.yaml` and update it according to your needs.
-
-
-
-
-## rush main commands
-
-### after each project package.json modifications
-
-```
-rush update
-```
-
-### after pulled last changes
-
-```
-rush rebuild
-```
-
-### run npm build for each project
-```
-rush build
-```
+> if you want to skip yeoman prompting, copy compose.json.example into your project folder then rename it `compose.json` and update it according to your needs.
