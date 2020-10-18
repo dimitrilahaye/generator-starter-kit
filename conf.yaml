@@ -1,0 +1,13 @@
+projects:
+- packageName: react-vanilla
+  projectFolder: react-vanilla
+  reviewCategory: reactVanilla
+- packageName: react-typescript
+  projectFolder: react-typescript
+  reviewCategory: reactTypescript
+- packageName: express-vanilla
+  projectFolder: express-vanilla
+  reviewCategory: expressVanilla
+- packageName: express-typescript
+  projectFolder: express-typescript
+  reviewCategory: expressTypescript
