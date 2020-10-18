@@ -1,0 +1,30 @@
+{
+    "generator-starter-kit": {
+        // list of the boilerplate you want to init
+        // strings matches with the folder name of each boilerplate
+        "projects": [
+            "react-vanilla",
+            "react-typescript",
+            "express-vanilla",
+            "express-typescript"
+        ],
+        // each following object is the prompt configuration for the boilerplates
+        // the keys match with the folder name of each boilerplate
+        "react-vanilla": {
+            "applicationName": "my-frontend-vanilla"
+        },
+        "react-typescript": {
+            "applicationName": "my-frontend-typescript"
+        },
+        "express-vanilla": {
+            "applicationName": "my-backend-vanilla"
+        },
+        "express-typecript": {
+            "applicationName": "my-backend-typecript"
+        }
+    }
+}
+/*
+Message for the boilerplate developers:
+  > update this file each time you add a boilerplate to the generator
+*/

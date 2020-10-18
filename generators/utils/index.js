@@ -2,12 +2,13 @@ const path = require('path');
 const chalk = require('chalk');
 
 const error = chalk.bold.red;
+const success = chalk.bold.green;
 const warning = chalk.keyword('orange');
 const info = chalk.bold.blue;
 
 module.exports = {
     rootPath: path.join(__dirname, '..', '..'),
     log: {
-        error, warning, info
+        error, warning, info, success
     }
 }

@@ -1,79 +1,103 @@
 const Generator = require('yeoman-generator');
 const path = require('path');
-const YAML = require('yaml');
 const fs = require('fs');
+const chalk = require('chalk');
 
-const starterProjects = require ('./projects/starter-projects');
+const starterProjects = require('./projects/starter-projects');
 
-const {rootPath, log} = require('../utils');
+const { rootPath, log } = require('../utils');
 
 module.exports = class extends Generator {
-    isConfig;
-    config;
+    isConf;
+    conf;
 
     constructor(args, opts) {
         super(args, opts);
-        this.isConfig = false;
+        this.isConf = false;
         //   this.option('skip-install');
     }
 
-    // this._writeFile('express-vanilla', 'routes/users.js', 'my-app')
-    _writeFile(projectSrc, templatePath, appName, params) {
-        const template = path.join(rootPath, projectSrc, 'templates', templatePath);
-        const destination = path.join(rootPath, 'projects', appName , templatePath);
-        if (!this.fs.exists(destination)) {
-            this.fs.copyTpl(template, destination, params);
-        }
+    _writeFile(templatePath, appName, params) {
+        const template = path.join(this.destinationPath(appName), 'templates', templatePath);
+        const destination = path.join(this.destinationPath(appName), templatePath);
+        this.fs.copyTpl(template, destination, params);
     }
 
     /**
-     * Search for ./compose.yaml
+     * Search for ./compose.json in the project root
      * If does not exist, launch prompt step.
      * Else, store the configuration then skip prompt step.
     */
     initializing() {
-        if (!this.fs.exists(path.join(rootPath, 'compose.yaml'))) {
+        if (!this.fs.exists(this.destinationPath('compose.json'))) {
             this.log(log.info('compose.yaml not found. Will launch prompts'));
-            this.isConfig = false;
+            this.isConf = false;
+            return;
         }
-        this.log(log.info('compose.yaml found. Validation begins'));
-        // TODO: if validation is ok
-        this.isConfig = true;
-        const file = fs.readFileSync(path.join(rootPath, 'compose.yaml'), 'utf8');
-        this.config = YAML.parse(file);
-        console.log(this.config);
-        // TODO: else: throw error
+        this.log(log.info('compose.json found. Writing step begins'));
+        this.isConf = true;
+        const file = fs.readFileSync(this.destinationPath('compose.json'), 'utf8');
+        this.conf = JSON.parse(file);
     }
 
-    prompting() {
-        if (!this.isConfig) {
-            this.log('prompting');
+    async prompting() {
+        if (!this.isConf) {
+            this.log(log.info('Prompting'));
+            const boilerplatePrompt = {
+                type: 'checkbox',
+                name: 'projects',
+                required: true,
+                message: 'Which projects would you generate?',
+                choices: []
+            };
+            const prompts = [];
+            for (let projectName in starterProjects) {
+                prompts.push(...starterProjects[projectName].prompting);
+                boilerplatePrompt.choices.push({
+                    name: projectName,
+                    value: projectName
+                });
+            }
+            prompts.unshift(boilerplatePrompt);
+            this.conf = await this.prompt(prompts);
         }
     }
 
     configuring() {
-        this.log('configuring');
+        this.log(log.info('Configuring'));
     }
 
     writing() {
-        // TODO: template
-        // TODO: copy files in the projects folder
-        // TODO: remove templates folder
-        this.log('writing');
+        this.conf.projects.forEach((project) => {
+            const templateList = starterProjects[project].writing;
+            const answers = this.conf[project];
+            this.log(log.info(`Writing files for ${chalk.red(answers.applicationName)} (${chalk.yellow(project)} boilerplate)`));
+            this.fs.copy(
+                path.join(rootPath, project),
+                this.destinationPath(answers.applicationName),
+                {
+                    globOptions: {
+                        dot: true
+                    }
+                }
+            );
+            templateList.forEach((template) => this._writeFile(template, answers.applicationName, answers));
+            this.fs.delete(this.destinationPath(answers.applicationName, 'templates'));
+        });
     }
 
     install() {
+        this.log(log.info('Setting Rush'));
         // TODO: go to projects folder
         // TODO: copy generators/templates/rush.json into projects folder
         // TODO: register the projects in the rush.json
         // TODO: rush init
         // TODO: rush build
-        this.log('install');
     }
 
     end() {
         // Happy coding
-        this.log('end');
+        this.log(log.success('Your bootstraping is finished. Happy coding!'));
     }
 
 }
