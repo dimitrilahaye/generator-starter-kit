@@ -86,7 +86,7 @@ module.exports = class extends Generator {
         });
     }
 
-    async install() {
+    install() {
         this.log(log.info('Setting Rush'));
         process.chdir(this.destinationPath());
         this.spawnCommand('rush init --overwrite-existing').on('close', () => {
