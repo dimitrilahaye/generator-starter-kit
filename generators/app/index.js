@@ -90,10 +90,14 @@ module.exports = class extends Generator {
     }
 
     install() {
+        this.conf.projects.forEach((project) => {
+            const answers = this.conf[project];
+            console.log(starterProjects[project].install(answers));
+        });
         this.log(log.info('Setting Rush'));
         const done = this.async();
         process.chdir(this.destinationPath());
-        this.spawnCommand('rush', ['init', 'overwrite-existing']).on('close', () => {
+        this.spawnCommand('rush', ['init', '--overwrite-existing']).on('close', () => {
             const projectsRushConf = [];
             const { projects, ...apps } = this.conf;
             for (let appName in apps) {

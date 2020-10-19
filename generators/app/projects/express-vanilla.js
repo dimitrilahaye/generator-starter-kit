@@ -17,7 +17,11 @@ const prompting = () => {
 const writing = ({ applicationName }) => {
 	return ['routes/users.js', 'package.json'];
 }
+// in case this boilerplate needs `composer install`, and so on...
+const install = ({ applicationName }) => {
+	return 'installing ' + base;
+}
 
 module.exports = {
-    prompting, writing
+    prompting, writing, install
 }

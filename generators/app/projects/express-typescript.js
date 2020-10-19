@@ -17,7 +17,18 @@ const prompting = () => {
 const writing = ({ applicationName }) => {
 	return ['routes/home.ts', 'package.json'];
 }
+// in case this boilerplate needs `composer install`, and so on...
+// could return array of args for this.spawnCommand
+// [
+//   ['composer', ['install']],
+//   ['another-command', ['args']],
+// ]
+// Or maybe we should make these modules extending Generator too... maybe it could
+// be easier like that
+const install = ({ applicationName }) => {
+	return 'installing ' + base;
+}
 
 module.exports = {
-    prompting, writing
+    prompting, writing, install
 }
