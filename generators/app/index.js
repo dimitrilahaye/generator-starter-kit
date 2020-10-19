@@ -45,6 +45,7 @@ module.exports = class extends Generator {
             this.log(log.info('Prompting'));
             // TODO: ask for using rush
             // TODO: if yes, ask for npm, yarn or pnpm
+            // TODO: according to this answer, ask for current version
             const boilerplatePrompt = {
                 type: 'checkbox',
                 name: 'projects',
@@ -54,7 +55,7 @@ module.exports = class extends Generator {
             };
             const prompts = [];
             for (let projectName in starterProjects) {
-                prompts.push(...starterProjects[projectName].prompting);
+                prompts.push(...starterProjects[projectName].prompting());
                 boilerplatePrompt.choices.push({
                     name: projectName,
                     value: projectName
@@ -71,8 +72,8 @@ module.exports = class extends Generator {
 
     writing() {
         this.conf.projects.forEach((project) => {
-            const templateList = starterProjects[project].writing;
             const answers = this.conf[project];
+            const templateList = starterProjects[project].writing(answers);
             this.log(log.info(`Writing files for ${chalk.red(answers.applicationName)} (${chalk.yellow(project)} boilerplate)`));
             this.fs.copy(
                 path.join(rootPath, project),
