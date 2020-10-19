@@ -25,7 +25,10 @@ const writing = ({ applicationName }) => {
  * in case this boilerplate needs `composer install`, and so on...
  */
 const install = ({ applicationName }) => {
-	return 'installing ' + base;
+	return [
+		['node', ['-v']],
+		['npm', ['-v']],
+	];
 }
 
 module.exports = {
