@@ -43,6 +43,8 @@ module.exports = class extends Generator {
     async prompting() {
         if (!this.isConf) {
             this.log(log.info('Prompting'));
+            // TODO: ask for using rush
+            // TODO: if yes, ask for npm, yarn or pnpm
             const boilerplatePrompt = {
                 type: 'checkbox',
                 name: 'projects',
@@ -88,8 +90,9 @@ module.exports = class extends Generator {
 
     install() {
         this.log(log.info('Setting Rush'));
+        const done = this.async();
         process.chdir(this.destinationPath());
-        this.spawnCommand('rush init --overwrite-existing').on('close', () => {
+        this.spawnCommand('rush', ['init', 'overwrite-existing']).on('close', () => {
             const projectsRushConf = [];
             const { projects, ...apps } = this.conf;
             for (let appName in apps) {
@@ -103,9 +106,14 @@ module.exports = class extends Generator {
             const rushConfig = JSON.parse(rush);
             rushConfig.projects.push(...projectsRushConf);
             fs.writeFileSync(this.destinationPath('rush.json'), JSON.stringify(rushConfig));
-            fs.unlinkSync(this.destinationPath('common', 'config', 'rush', 'pnpmfile.js'));
-            this.spawnCommand('rush update').on('close', () => {
-                this.spawnCommand('rush build');
+            const pnpmfile = this.destinationPath('common', 'config', 'rush', 'pnpmfile.js');
+            if (this.fs.exists(pnpmfile)) {
+                fs.unlinkSync(pnpmfile);
+            }
+            this.spawnCommand('rush', ['update']).on('close', () => {
+                this.spawnCommand('rush', ['build']).on('close', () => {
+                    done();
+                });
             });
         });
     }
