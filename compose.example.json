@@ -8,6 +8,7 @@
             "express-vanilla",
             "express-typescript"
         ],
+        "rush": true, // want you to use Rush on the final folder
         // each following object is the prompt configuration for the boilerplates
         // the keys match with the folder name of each boilerplate
         "react-vanilla": {
