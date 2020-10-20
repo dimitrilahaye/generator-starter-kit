@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 module.exports = class extends BaseGenerator {
+    isConfigurationFile;
     starterProjects;
 
     constructor(args, opts) {
@@ -34,13 +35,16 @@ module.exports = class extends BaseGenerator {
         }
         this.info('compose.json found. Writing step begins');
         const file = fs.readFileSync(this.destinationPath('compose.json'), 'utf8');
-        this.configuration.base = JSON.parse(file);
+        // TODO: in conf json, separate .base and .boilerplates
+        // TODO: then, update logic in sub generators
+        this.configuration = { ...this.configuration, ...JSON.parse(file) };
+        this.isConfigurationFile = true;
     }
     /**
      * Launch these base generator's global prompts then launch selected boilerplates generators
      */
     async prompting() {
-        if (!this.configuration.base) {
+        if (!this.isConfigurationFile) {
             this.info('Prompting base generator');
             // TODO: if use rush === true, ask for npm, yarn or pnpm
             // TODO: according to this answer, ask for current version
@@ -51,14 +55,14 @@ module.exports = class extends BaseGenerator {
             const boilerplatePrompts = [
                 {
                     type: 'checkbox',
-                    name: 'projects',
+                    name: 'base.projects',
                     required: true,
                     message: 'Which projects would you generate?',
                     choices: []
                 },
                 {
                     type: 'confirm',
-                    name: 'rush',
+                    name: 'base.rush',
                     required: true,
                     message: 'Want you to use Rush?'
                 }
@@ -69,13 +73,13 @@ module.exports = class extends BaseGenerator {
                     value: project
                 });
             });
-            this.configuration.base = await this.prompt(boilerplatePrompts);
+            this.answers = await this.prompt(boilerplatePrompts);
             // =======================================================
             // Will now launch all choosen boilerplates generators
             // =======================================================
             this.info('Will now launch the generator(s) of your choosen boilerplate(s)');
-            this.starterProjects = this.starterProjects.filter((project) => this.configuration.base.projects.includes(project));
-            this._forEachProject((project) => this.composeWith(require.resolve(path.join('..', project)), this.configuration.base));
+            this.starterProjects = this.starterProjects.filter((project) => this.answers.base.projects.includes(project));
+            this._forEachProject((project) => this.composeWith(require.resolve(path.join('..', project)), this.answers));
         }
     }
     /**
@@ -95,7 +99,7 @@ module.exports = class extends BaseGenerator {
      */
     install() {
         const done = this.async();
-        if (this.configuration.base.rush) {
+        if (this.answers.base.rush) {
             this.info('Setting Rush');
             process.chdir(this.destinationPath());
             this.spawnCommand('rush', ['init', '--overwrite-existing']).on('close', async () => {

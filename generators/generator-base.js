@@ -7,11 +7,11 @@ const warning = chalk.keyword('orange');
 const info = chalk.bold.blue;
 
 module.exports = class extends Generator {
-    configuration = {};
+    configuration;
     answers;
     constructor(args, opts) {
         super(args, opts);
-        this.configuration.base = opts.base;
+        this.configuration = opts;
     }
     error(message) {
         this.log(error(message));
@@ -24,6 +24,9 @@ module.exports = class extends Generator {
     }
     info(message) {
         this.log(info(message));
+    }
+    getBaseConfiguration() {
+        return this.configuration.base;
     }
     /**
      * For the given template path, templatize and overwrite the real file with this.answers.
