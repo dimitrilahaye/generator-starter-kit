@@ -7,16 +7,21 @@ module.exports = class extends BaseGenerator {
     }
     initializing() {
         this.info('initializing express-vanilla');
+        if (this.getBoilerplatesConfiguration()) {
+            this.answers = this.getBoilerplateConfiguration('express-vanilla');
+        }
     }
     async prompting() {
-        this.answers = await this.prompt([
-            {
-                type: 'input',
-                name: 'applicationName',
-                required: true,
-                message: `What is the name of your express-vanilla application?`
-            }
-        ]);
+        if (!this.getBoilerplatesConfiguration()) {
+            this.answers = await this.prompt([
+                {
+                    type: 'input',
+                    name: 'applicationName',
+                    required: true,
+                    message: `What is the name of your express-vanilla application?`
+                }
+            ]);
+        }
     }
     configuring() {
         this.info('Configuring express-vanilla');

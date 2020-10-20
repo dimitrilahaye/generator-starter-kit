@@ -7,16 +7,21 @@ module.exports = class extends BaseGenerator {
     }
     initializing() {
         this.info('initializing react-typescript');
+        if (this.getBoilerplatesConfiguration()) {
+            this.answers = this.getBoilerplateConfiguration('react-typescript');
+        }
     }
     async prompting() {
-        this.answers = await this.prompt([
-            {
-                type: 'input',
-                name: 'applicationName',
-                required: true,
-                message: `What is the name of your react-typescript application?`
-            }
-        ]);
+        if (!this.getBoilerplatesConfiguration()) {
+            this.answers = await this.prompt([
+                {
+                    type: 'input',
+                    name: 'applicationName',
+                    required: true,
+                    message: `What is the name of your react-typescript application?`
+                }
+            ]);
+        }
     }
     configuring() {
         this.info('Configuring react-typescript');

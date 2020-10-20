@@ -37,8 +37,13 @@ module.exports = class extends BaseGenerator {
         const file = fs.readFileSync(this.destinationPath('compose.json'), 'utf8');
         // TODO: in conf json, separate .base and .boilerplates
         // TODO: then, update logic in sub generators
-        this.configuration = { ...this.configuration, ...JSON.parse(file) };
+        const conf = JSON.parse(file);
+        this.answers = this.configuration = { ...this.configuration, ...conf };
         this.isConfigurationFile = true;
+        this.getBaseConfiguration().projects.forEach((project) => this.composeWith(
+            require.resolve(path.join('..', project)),
+            conf
+        ));
     }
     /**
      * Launch these base generator's global prompts then launch selected boilerplates generators

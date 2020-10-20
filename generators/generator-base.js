@@ -26,7 +26,13 @@ module.exports = class extends Generator {
         this.log(info(message));
     }
     getBaseConfiguration() {
-        return this.configuration.base;
+        return this.configuration.base || {};
+    }
+    getBoilerplatesConfiguration() {
+        return this.configuration.boilerplates || {};
+    }
+    getBoilerplateConfiguration(dir) {
+        return this.configuration.boilerplates && this.configuration.boilerplates[dir] || {};
     }
     /**
      * For the given template path, templatize and overwrite the real file with this.answers.

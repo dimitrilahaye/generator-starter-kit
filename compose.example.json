@@ -1,31 +1,31 @@
 {
-    "generator-starter-kit": {
-        // list of the boilerplate you want to init
-        // strings matches with the folder name of each boilerplate
-        "projects": [
-            "react-vanilla",
-            "react-typescript",
-            "express-vanilla",
-            "express-typescript"
-        ],
-        "rush": true, // want you to use Rush on the final folder
-        // each following object is the prompt configuration for the boilerplates
-        // the keys match with the folder name of each boilerplate
-        "react-vanilla": {
-            "applicationName": "my-frontend-vanilla"
-        },
-        "react-typescript": {
-            "applicationName": "my-frontend-typescript"
-        },
-        "express-vanilla": {
-            "applicationName": "my-backend-vanilla"
-        },
-        "express-typecript": {
-            "applicationName": "my-backend-typecript"
-        }
+    // {base} object owns all the options for the base generator
+    "base": {
+      "projects": [ // list of the needed generators (strings matches with the boilerplate's name)
+        "express-typescript",
+        "react-typescript",
+        "express-vanilla",
+        "react-vanilla"
+      ],
+      "rush": true // in case you want to use rush with all your newly generated projects
+    },
+    // {boilerplates} object owns all the options for each sub-generators
+    "boilerplates": {
+      "express-typescript": {
+        "applicationName": "my-backend-typescript-app"
+      },
+      "express-vanilla": {
+        "applicationName": "my-backend-app"
+      },
+      "react-typescript": {
+        "applicationName": "my-frontend-typescript-app"
+      },
+      "react-vanilla": {
+        "applicationName": "my-frontend-app"
+      }
     }
-}
-/*
-Message for the boilerplate developers:
-  > update this file each time you add a boilerplate to the generator
-*/
+  }
+  /*
+  Message for the boilerplate developers:
+    > update this file each time you add a boilerplate to the generator
+  */

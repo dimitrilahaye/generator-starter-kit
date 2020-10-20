@@ -7,16 +7,21 @@ module.exports = class extends BaseGenerator {
     }
     initializing() {
         this.info('initializing react-vanilla');
+        if (this.getBoilerplatesConfiguration()) {
+            this.answers = this.getBoilerplateConfiguration('react-vanilla');
+        }
     }
     async prompting() {
-        this.answers = await this.prompt([
-            {
-                type: 'input',
-                name: 'applicationName',
-                required: true,
-                message: `What is the name of your react-vanilla application?`
-            }
-        ]);
+        if (!this.getBoilerplatesConfiguration()) {
+            this.answers = await this.prompt([
+                {
+                    type: 'input',
+                    name: 'applicationName',
+                    required: true,
+                    message: `What is the name of your react-vanilla application?`
+                }
+            ]);
+        }
     }
     configuring() {
         this.info('Configuring react-vanilla');

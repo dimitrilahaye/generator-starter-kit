@@ -1,5 +1,6 @@
 const BaseGenerator = require('../generator-base');
 const chalk = require('chalk');
+const path = require('path');
 
 module.exports = class extends BaseGenerator {
     constructor(args, opts) {
@@ -7,16 +8,21 @@ module.exports = class extends BaseGenerator {
     }
     initializing() {
         this.info('initializing express-typescript');
+        if (this.getBoilerplatesConfiguration()) {
+            this.answers = this.getBoilerplateConfiguration('express-typescript');
+        }
     }
     async prompting() {
-        this.answers = await this.prompt([
-            {
-                type: 'input',
-                name: 'applicationName',
-                required: true,
-                message: `What is the name of your express-typescript application?`
-            }
-        ]);
+        if (!this.getBoilerplatesConfiguration()) {
+            this.answers = await this.prompt([
+                {
+                    type: 'input',
+                    name: 'applicationName',
+                    required: true,
+                    message: `What is the name of your express-typescript application?`
+                }
+            ]);
+        }
     }
     configuring() {
         this.info('Configuring express-typescript');
