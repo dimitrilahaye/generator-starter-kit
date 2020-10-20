@@ -18,6 +18,5 @@ yo starter-kit:react-typescript
 yo starter-kit:express-vanilla
 ```
 
-## WIP
-If you want to skip yeoman prompting, copy compose.json.example into your project folder,
+> If you want to skip yeoman prompting, copy compose.json.example into your project folder,
 rename it `compose.json` then update it according to your needs.
