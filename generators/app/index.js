@@ -1,31 +1,23 @@
-const Generator = require('yeoman-generator');
+const BaseGenerator = require('../generator-base');
 const path = require('path');
 const fs = require('fs');
-const chalk = require('chalk');
 
-const starterProjects = require('./projects/starter-projects');
-
-const { rootPath, log } = require('../utils');
-
-module.exports = class extends Generator {
-    isConf;
-    conf;
+module.exports = class extends BaseGenerator {
+    starterProjects;
 
     constructor(args, opts) {
         super(args, opts);
-        this.isConf = false;
+        this.starterProjects = this._getDirectories(path.join(path.join(__dirname, '..', '..'), 'generators'))
+            .filter((dir) => dir !== 'app');
         //   this.option('skip-install');
     }
-
-    /**
-     * @param {string} templatePath the path to the file into the templates folder
-     * @param {string} appName the applicationName submitted by the user for this boilerplate
-     * @param {any} params the answer object related to this boilerplate prompt
-     */
-    _writeFile(templatePath, appName, params) {
-        const template = path.join(this.destinationPath(appName), 'templates', templatePath);
-        const destination = path.join(this.destinationPath(appName), templatePath);
-        this.fs.copyTpl(template, destination, params);
+    _getDirectories(source) {
+        return fs.readdirSync(source, { withFileTypes: true })
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name);
+    }
+    _forEachProject(cb) {
+        this.starterProjects.forEach(cb);
     }
     /**
      * Search for ./compose.json in the project root
@@ -37,28 +29,26 @@ module.exports = class extends Generator {
         // Checking the compose.json file
         // =======================================================
         if (!this.fs.exists(this.destinationPath('compose.json'))) {
-            this.log(log.info('compose.yaml not found. Will launch prompts'));
-            this.isConf = false;
+            this.info('compose.yaml not found. Will launch prompts');
             return;
         }
-        this.log(log.info('compose.json found. Writing step begins'));
-        this.isConf = true;
+        this.info('compose.json found. Writing step begins');
         const file = fs.readFileSync(this.destinationPath('compose.json'), 'utf8');
-        this.conf = JSON.parse(file);
+        this.configuration.base = JSON.parse(file);
     }
     /**
-     * Launch these generator's global prompts then each choosen boilerplate prompts.
+     * Launch these base generator's global prompts then launch selected boilerplates generators
      */
     async prompting() {
-        if (!this.isConf) {
-            this.log(log.info('Prompting'));
+        if (!this.configuration.base) {
+            this.info('Prompting base generator');
             // TODO: if use rush === true, ask for npm, yarn or pnpm
             // TODO: according to this answer, ask for current version
 
             // =======================================================
             // Preparing general prompts for starter-kit
             // =======================================================
-            const boilerplatePrompt = [
+            const boilerplatePrompts = [
                 {
                     type: 'checkbox',
                     name: 'projects',
@@ -73,97 +63,53 @@ module.exports = class extends Generator {
                     message: 'Want you to use Rush?'
                 }
             ];
-            // =======================================================
-            // Preparing specific prompts for each boilerplates
-            // =======================================================
-            const prompts = [];
-            for (let projectName in starterProjects) {
-                prompts.push(...starterProjects[projectName].prompting());
-                boilerplatePrompt[0].choices.push({
-                    name: projectName,
-                    value: projectName
+            this._forEachProject((project) => {
+                boilerplatePrompts[0].choices.push({
+                    name: project,
+                    value: project
                 });
-            }
-            prompts.unshift(...boilerplatePrompt);
-            this.conf = await this.prompt(prompts);
+            });
+            this.configuration.base = await this.prompt(boilerplatePrompts);
+            // =======================================================
+            // Will now launch all choosen boilerplates generators
+            // =======================================================
+            this.info('Will now launch the generator(s) of your choosen boilerplate(s)');
+            this.starterProjects = this.starterProjects.filter((project) => this.configuration.base.projects.includes(project));
+            this._forEachProject((project) => this.composeWith(require.resolve(path.join('..', project)), this.configuration.base));
         }
     }
     /**
      * Nothing for now...
      */
     configuring() {
-        this.log(log.info('Configuring'));
+        this.info('Configuring base generator');
     }
     /**
-     * Copy to the destination path the files of each boilerplate.
-     * Proceed templating for each of them.
+     * Nothing for now...
      */
     writing() {
-        this.conf.projects.forEach((project) => {
-            // =======================================================
-            // Copying boilerplates files in destination path
-            // =======================================================
-            const answers = this.conf[project];
-            const templateList = starterProjects[project].writing(answers);
-            this.log(log.info(`Writing files for ${chalk.red(answers.applicationName)} (${chalk.yellow(project)} boilerplate)`));
-            this.fs.copy(
-                path.join(rootPath, project),
-                this.destinationPath(answers.applicationName),
-                {
-                    globOptions: {
-                        dot: true
-                    }
-                }
-            );
-            // =======================================================
-            // Doing templating stuff
-            // =======================================================
-            templateList.forEach((template) => this._writeFile(template, answers.applicationName, answers));
-            this.fs.delete(this.destinationPath(answers.applicationName, 'templates'));
-        });
+        this.info('Writing base generator');
     }
     /**
-     * Launch the commands setted for each boilerplate.
-     * Then if asked, configure Rush.
+     * Launching rush init, update and build if asked
      */
-    async install() {
+    install() {
         const done = this.async();
-        // =======================================================
-        // Launching install step for each projects
-        // =======================================================
-        this.log(log.info('Preparing projects install step'));
-        const spawnsPromises = [];
-        this.conf.projects.forEach((project) => {
-            const answers = this.conf[project];
-            const spawns = starterProjects[project].install(answers);
-            const projectSpawns = spawns.reduce((c, spawn) => {
-                const p = new Promise((res, rej) => {
-                    this.spawnCommand(...spawn).on('close', () => res());
-                });
-                c.push(p);
-                return c;
-            }, []);
-            spawnsPromises.push(...projectSpawns);
-        });
-        await Promise.all(spawnsPromises).then(() => this.log(log.info('End of projects install step')));
-        // =======================================================
-        // Launching rush init, update and build if asked
-        // =======================================================
-        if (this.conf.rush) {
-            this.log(log.info('Setting Rush'));
+        if (this.configuration.base.rush) {
+            this.info('Setting Rush');
             process.chdir(this.destinationPath());
-            this.spawnCommand('rush', ['init', '--overwrite-existing']).on('close', () => {
+            this.spawnCommand('rush', ['init', '--overwrite-existing']).on('close', async () => {
                 // after rush init, overwrite rush.json with asked boilerplates
                 const projectsRushConf = [];
-                const { projects, rush, ...apps } = this.conf;
-                for (let appName in apps) {
-                    const app = apps[appName];
-                    projectsRushConf.push({
-                        "packageName": app.applicationName,
-                        "projectFolder": app.applicationName
+                this._getDirectories(this.destinationPath())
+                    .filter((dir) => dir !== 'common')
+                    .forEach((project) => {
+                        projectsRushConf.push({
+                            "packageName": project,
+                            "projectFolder": project
+                        });
                     });
-                }
-                const rushFile = fs.readFileSync(path.join(__dirname, '..', 'templates', 'rush.json'), 'utf8');
+                const rushFile = fs.readFileSync(this.templatePath('rush.json'), 'utf8');
                 const rushConfig = JSON.parse(rushFile);
                 rushConfig.projects.push(...projectsRushConf);
                 fs.writeFileSync(this.destinationPath('rush.json'), JSON.stringify(rushConfig));
@@ -173,19 +119,18 @@ module.exports = class extends Generator {
                     fs.unlinkSync(pnpmfile);
                 }
                 // launch rush update then rush build
-                this.spawnCommand('rush', ['update']).on('close', () => {
-                    this.spawnCommand('rush', ['build']).on('close', () => {
-                        done();
-                    });
-                });
+                await this.spawnCommands([['rush', ['update']], ['rush', ['build']]]);
+                done();
             });
+        } else {
+            done();
         }
     }
     /**
      * This is the end, my friend.
      */
     end() {
-        this.log(log.success('Your bootstraping is finished. Happy coding!'));
+        this.success('Your bootstraping is finished. Happy coding!');
     }
 
 }

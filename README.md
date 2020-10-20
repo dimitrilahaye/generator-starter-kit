@@ -13,6 +13,11 @@ npm install
 npm link
 cd /my-project
 yo starter-kit
+# you can also call generators separately:
+yo starter-kit:react-typescript
+yo starter-kit:express-vanilla
 ```
 
-> if you want to skip yeoman prompting, copy compose.json.example into your project folder then rename it `compose.json` and update it according to your needs.
+## WIP
+If you want to skip yeoman prompting, copy compose.json.example into your project folder,
+rename it `compose.json` then update it according to your needs.
