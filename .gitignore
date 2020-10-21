@@ -46,6 +46,9 @@ jspm_packages/
 # Output of 'npm pack'
 *.tgz
 
+# IDE
+.idea
+
 # Yarn Integrity file
 .yarn-integrity
 

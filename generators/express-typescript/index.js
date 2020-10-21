@@ -5,13 +5,14 @@ const path = require('path');
 module.exports = class extends BaseGenerator {
     constructor(args, opts) {
         super(args, opts);
+        this.root = 'express-typescript';
     }
+
     initializing() {
-        this.info('initializing express-typescript');
-        if (this.getBoilerplatesConfiguration()) {
-            this.answers = this.getBoilerplateConfiguration('express-typescript');
-        }
+        this.info(`initializing ${this.root}`);
+        this.initBoilerplateAnswers();
     }
+
     async prompting() {
         if (!this.getBoilerplatesConfiguration()) {
             this.answers = await this.prompt([
@@ -19,24 +20,26 @@ module.exports = class extends BaseGenerator {
                     type: 'input',
                     name: 'applicationName',
                     required: true,
-                    message: `What is the name of your express-typescript application?`
+                    message: `What is the name of your ${this.root} application?`
                 }
             ]);
         }
     }
+
     configuring() {
-        this.info('Configuring express-typescript');
+        this.info(`Configuring ${this.root}`);
     }
+
     writing() {
         // =======================================================
         // Copying boilerplates files in destination path
         // =======================================================
-        const { applicationName } = this.answers;
-        this.info(`Writing files for ${chalk.red(applicationName)} (express-typescript boilerplate)`);
+        const {applicationName} = this.answers;
+        this.info(`Writing files for ${chalk.red(applicationName)} (${this.root} boilerplate)`);
         this.fs.copy(
             this.templatePath('**/*'),
             this.destinationPath(applicationName),
-            { globOptions: { dot: true, } }
+            {globOptions: {dot: true,}}
         );
         // =======================================================
         // Doing templating stuff
@@ -45,15 +48,24 @@ module.exports = class extends BaseGenerator {
         templates.forEach((template) => this.writeFile(template));
         this.fs.delete(this.destinationPath(applicationName, 'templates'));
     }
-    async install() {
-        this.info('install express-typescript');
-        const spawns = [
-            ['node', ['-v']],
-            ['npm', ['-v']],
-        ];
-        await this.spawnCommands(spawns, () => this.info('End of express-typescript install step'));
+
+    install() {
+        const done = this.async();
+        const {rush} = this.getBaseConfiguration();
+        if (!rush) {
+            this.info(`install ${this.root}`);
+            const {applicationName} = this.answers;
+            this.spawnCommand('npm', ['install'], {cwd: this.destinationPath(applicationName)})
+                .on('close', () => {
+                    this.spawnCommand('npm', ['run', 'build'], {cwd: this.destinationPath(applicationName)})
+                        .on('close', () => done());
+                });
+        } else {
+            done();
+        }
     }
+
     end() {
-        this.success('Your bootstraping express-typescript is finished. Happy coding!');
+        this.success(`Your bootstraping ${this.root} is finished. Happy coding!`);
     }
 }

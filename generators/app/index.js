@@ -12,14 +12,17 @@ module.exports = class extends BaseGenerator {
             .filter((dir) => dir !== 'app');
         //   this.option('skip-install');
     }
+
     _getDirectories(source) {
-        return fs.readdirSync(source, { withFileTypes: true })
+        return fs.readdirSync(source, {withFileTypes: true})
             .filter(dirent => dirent.isDirectory())
             .map(dirent => dirent.name);
     }
+
     _forEachProject(cb) {
         this.starterProjects.forEach(cb);
     }
+
     /**
      * Search for ./compose.json in the project root
      * If does not exist, launch prompt step.
@@ -38,13 +41,14 @@ module.exports = class extends BaseGenerator {
         // TODO: in conf json, separate .base and .boilerplates
         // TODO: then, update logic in sub generators
         const conf = JSON.parse(file);
-        this.answers = this.configuration = { ...this.configuration, ...conf };
+        this.answers = this.configuration = {...this.configuration, ...conf};
         this.isConfigurationFile = true;
         this.getBaseConfiguration().projects.forEach((project) => this.composeWith(
             require.resolve(path.join('..', project)),
             conf
         ));
     }
+
     /**
      * Launch these base generator's global prompts then launch selected boilerplates generators
      */
@@ -87,18 +91,21 @@ module.exports = class extends BaseGenerator {
             this._forEachProject((project) => this.composeWith(require.resolve(path.join('..', project)), this.answers));
         }
     }
+
     /**
      * Nothing for now...
      */
     configuring() {
         this.info('Configuring base generator');
     }
+
     /**
      * Nothing for now...
      */
     writing() {
         this.info('Writing base generator');
     }
+
     /**
      * Launching rush init, update and build if asked
      */
@@ -107,7 +114,7 @@ module.exports = class extends BaseGenerator {
         if (this.answers.base.rush) {
             this.info('Setting Rush');
             process.chdir(this.destinationPath());
-            this.spawnCommand('rush', ['init', '--overwrite-existing']).on('close', async () => {
+            this.spawnCommand('rush', ['init', '--overwrite-existing']).on('close', () => {
                 // after rush init, overwrite rush.json with asked boilerplates
                 const projectsRushConf = [];
                 this._getDirectories(this.destinationPath())
@@ -128,13 +135,15 @@ module.exports = class extends BaseGenerator {
                     fs.unlinkSync(pnpmfile);
                 }
                 // launch rush update then rush build
-                await this.spawnCommands([['rush', ['update']], ['rush', ['build']]]);
-                done();
+                this.spawnCommand('rush', ['update']).on('close', () => {
+                    this.spawnCommand('rush', ['build']).on('close', () => done());
+                });
             });
         } else {
             done();
         }
     }
+
     /**
      * This is the end, my friend.
      */
