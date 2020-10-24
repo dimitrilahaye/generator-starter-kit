@@ -1,6 +1,7 @@
 const BaseGenerator = require('../generator-base');
 const path = require('path');
 const fs = require('fs');
+const { throws } = require('assert');
 
 module.exports = class extends BaseGenerator {
     isConfigurationFile;
@@ -14,7 +15,7 @@ module.exports = class extends BaseGenerator {
     }
 
     _getDirectories(source) {
-        return fs.readdirSync(source, {withFileTypes: true})
+        return fs.readdirSync(source, { withFileTypes: true })
             .filter(dirent => dirent.isDirectory())
             .map(dirent => dirent.name);
     }
@@ -41,7 +42,7 @@ module.exports = class extends BaseGenerator {
         // TODO: in conf json, separate .base and .boilerplates
         // TODO: then, update logic in sub generators
         const conf = JSON.parse(file);
-        this.answers = this.configuration = {...this.configuration, ...conf};
+        this.answers = this.configuration = { ...this.configuration, ...conf };
         this.isConfigurationFile = true;
         this.getBaseConfiguration().projects.forEach((project) => this.composeWith(
             require.resolve(path.join('..', project)),
@@ -109,38 +110,38 @@ module.exports = class extends BaseGenerator {
     /**
      * Launching rush init, update and build if asked
      */
-    install() {
-        const done = this.async();
+    async install() {
         if (this.answers.base.rush) {
             this.info('Setting Rush');
-            process.chdir(this.destinationPath());
-            this.spawnCommand('rush', ['init', '--overwrite-existing']).on('close', () => {
-                // after rush init, overwrite rush.json with asked boilerplates
-                const projectsRushConf = [];
-                this._getDirectories(this.destinationPath())
-                    .filter((dir) => dir !== 'common')
-                    .forEach((project) => {
-                        projectsRushConf.push({
-                            "packageName": project,
-                            "projectFolder": project
-                        });
-                    });
-                const rushFile = fs.readFileSync(this.templatePath('rush.json'), 'utf8');
-                const rushConfig = JSON.parse(rushFile);
-                rushConfig.projects.push(...projectsRushConf);
-                fs.writeFileSync(this.destinationPath('rush.json'), JSON.stringify(rushConfig));
-                // remove pnpm file in rush conf
-                const pnpmfile = this.destinationPath('common', 'config', 'rush', 'pnpmfile.js');
-                if (this.fs.exists(pnpmfile)) {
-                    fs.unlinkSync(pnpmfile);
-                }
-                // launch rush update then rush build
-                this.spawnCommand('rush', ['update']).on('close', () => {
-                    this.spawnCommand('rush', ['build']).on('close', () => done());
-                });
+            await this.spawnCommandAsync('rush', ['init', '--overwrite-existing'], {
+                cwd: this.destinationPath()
             });
-        } else {
-            done();
+            // after rush init, overwrite rush.json with asked boilerplates
+            const projectsRushConf = [];
+            this._getDirectories(this.destinationPath())
+                .filter((dir) => dir !== 'common')
+                .forEach((project) => {
+                    projectsRushConf.push({
+                        "packageName": project,
+                        "projectFolder": project
+                    });
+                });
+            const rushFile = fs.readFileSync(this.templatePath('rush.json'), 'utf8');
+            const rushConfig = JSON.parse(rushFile);
+            rushConfig.projects.push(...projectsRushConf);
+            fs.writeFileSync(this.destinationPath('rush.json'), JSON.stringify(rushConfig));
+            // remove pnpm file in rush conf
+            const pnpmfile = this.destinationPath('common', 'config', 'rush', 'pnpmfile.js');
+            if (this.fs.exists(pnpmfile)) {
+                fs.unlinkSync(pnpmfile);
+            }
+            // launch rush update then rush build
+            await this.spawnCommandAsync('rush', ['update'], {
+                cwd: this.destinationPath()
+            });
+            await this.spawnCommandAsync('rush', ['build'], {
+                cwd: this.destinationPath()
+            });
         }
     }
 

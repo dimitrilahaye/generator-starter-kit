@@ -81,23 +81,14 @@ module.exports = class extends Generator {
     }
 
     /**
-     * Launch commands then execute a callback
-     * @param {any[]} spawns an array of string in this format [command, [...args]]
-     * @param {Function} cb the return callback after all commands have been launched
-     * @issue Promise.all plays the spawns in alpha order like `npm build` before `npm install`...
+     * Launch a command then return promise for success.
+     * @param {string} command the command to launch
+     * @param {string[]} args array of arguments
+     * @param {*} opt options for yeoman spawnCommand (see documentation)
      */
-    async spawnCommands(spawns, cb) {
-        const spawnsPromises = spawns.reduce((c, spawn) => {
-            console.log('===================================================');
-            console.log(spawn);
-            console.log('===================================================');
-            const p = new Promise((res, rej) => {
-                this.spawnCommand(...spawn).on('close', () => res());
-            });
-            c.push(p);
-            return c;
-        }, []);
-        console.log(spawnsPromises);
-        await Promise.all(spawnsPromises).then(() => cb && cb());
+    spawnCommandAsync(command, args, opt) {
+        return new Promise((res, rej) => {
+            this.spawnCommand(command, args, opt).on('close', () => res());
+        });
     }
 }

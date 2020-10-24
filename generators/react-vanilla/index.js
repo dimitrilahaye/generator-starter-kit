@@ -34,12 +34,12 @@ module.exports = class extends BaseGenerator {
         // =======================================================
         // Copying boilerplates files in destination path
         // =======================================================
-        const {applicationName} = this.answers;
+        const { applicationName } = this.answers;
         this.info(`Writing files for ${chalk.red(applicationName)} (${this.root} boilerplate)`);
         this.fs.copy(
             this.templatePath('**/*'),
             this.destinationPath(applicationName),
-            {globOptions: {dot: true,}}
+            { globOptions: { dot: true, } }
         );
         // =======================================================
         // Doing templating stuff
@@ -49,19 +49,13 @@ module.exports = class extends BaseGenerator {
         this.fs.delete(this.destinationPath(applicationName, 'templates'));
     }
 
-    install() {
-        const done = this.async();
-        const {rush} = this.getBaseConfiguration();
+    async install() {
+        const { rush } = this.getBaseConfiguration();
         if (!rush) {
             this.info(`install ${this.root}`);
-            const {applicationName} = this.answers;
-            this.spawnCommand('npm', ['install'], {cwd: this.destinationPath(applicationName)})
-                .on('close', () => {
-                    this.spawnCommand('npm', ['run', 'build'], {cwd: this.destinationPath(applicationName)})
-                        .on('close', () => done());
-                });
-        } else {
-            done();
+            const { applicationName } = this.answers;
+            await this.spawnCommandAsync('npm', ['install'], { cwd: this.destinationPath(applicationName) });
+            await this.spawnCommandAsync('npm', ['run', 'build'], { cwd: this.destinationPath(applicationName) });
         }
     }
 
