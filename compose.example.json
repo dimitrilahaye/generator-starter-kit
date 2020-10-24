@@ -2,26 +2,22 @@
     // {base} object owns all the options for the base generator
     "base": {
       "projects": [ // list of the needed generators (strings matches with the boilerplate's name)
-        "express-typescript",
-        "react-typescript",
-        "express-vanilla",
-        "react-vanilla"
+        "express",
+        "react"
       ],
       "rush": true // in case you want to use rush with all your newly generated projects
     },
     // {boilerplates} object owns all the options for each sub-generators
     "boilerplates": {
-      "express-typescript": {
-        "applicationName": "my-backend-typescript-app"
+      "express": {
+        "applicationName": "my-backend-app",
+        "typescript": true,
+        "npm": true
       },
-      "express-vanilla": {
-        "applicationName": "my-backend-app"
-      },
-      "react-typescript": {
-        "applicationName": "my-frontend-typescript-app"
-      },
-      "react-vanilla": {
-        "applicationName": "my-frontend-app"
+      "react": {
+        "applicationName": "my-frontend-app",
+        "typescript": true,
+        "npm": true
       }
     }
   }

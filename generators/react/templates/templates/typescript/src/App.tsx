@@ -16,7 +16,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          WELCOME IN <%= applicationName %>
+          Learn <%= applicationName %>
         </a>
       </header>
     </div>
