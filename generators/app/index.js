@@ -28,17 +28,13 @@ module.exports = class extends BaseGenerator {
      * Else, store the configuration then skip prompt step.
      */
     initializing() {
-        // =======================================================
         // Checking the compose.json file
-        // =======================================================
         if (!this.fs.exists(this.destinationPath('compose.json'))) {
             this.info('compose.yaml not found. Will launch prompts');
             return;
         }
         this.info('compose.json found. Writing step begins');
         const file = fs.readFileSync(this.destinationPath('compose.json'), 'utf8');
-        // TODO: in conf json, separate .base and .boilerplates
-        // TODO: then, update logic in sub generators
         const conf = JSON.parse(file);
         this.answers = this.configuration = { ...this.configuration, ...conf };
         this.isConfigurationFile = true;
@@ -57,9 +53,7 @@ module.exports = class extends BaseGenerator {
             // TODO: if use rush === true, ask for npm, yarn or pnpm
             // TODO: according to this answer, ask for current version
 
-            // =======================================================
             // Preparing general prompts for starter-kit
-            // =======================================================
             const boilerplatePrompts = [
                 {
                     type: 'checkbox',
@@ -82,9 +76,7 @@ module.exports = class extends BaseGenerator {
                 });
             });
             this.answers = await this.prompt(boilerplatePrompts);
-            // =======================================================
-            // Will now launch all choosen boilerplates generators
-            // =======================================================
+            // Launch all choosen boilerplates generators
             this.info('Will now launch the generator(s) of your choosen boilerplate(s)');
             this.starterProjects = this.starterProjects.filter((project) => this.answers.base.projects.includes(project));
             this._forEachProject((project) => this.composeWith(require.resolve(path.join('..', project)), this.answers));
