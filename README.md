@@ -1,21 +1,23 @@
 ## install global deps in order to make this generator working
 
-```
-npm install -g yo               # needed for the yeoman CLI and all its stuff
-npm install -g @microsoft/rush  # needed to the rush monorepo part.
+```bash
+npm install -g yo @microsoft/rush
 ```
 
 ## how to run the starter-kit generator in local
 
-```
+```bash
 cd generator-starter-kit
 npm install
 npm link
 cd /my-project
 yo starter-kit
 # you can also call generators separately:
-yo starter-kit:react-typescript
-yo starter-kit:express-vanilla
+yo starter-kit:react
+yo starter-kit:express
+# you can pass options to the commands
+yo starter-kit:react --npm --ts
+# here for a typescript react stack + launch npm install and build at the end of the process
 ```
 
 > If you want to skip yeoman prompting, copy compose.json.example into your project folder,
