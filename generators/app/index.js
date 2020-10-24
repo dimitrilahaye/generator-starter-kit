@@ -1,7 +1,6 @@
 const BaseGenerator = require('../generator-base');
 const path = require('path');
 const fs = require('fs');
-const { throws } = require('assert');
 
 module.exports = class extends BaseGenerator {
     isConfigurationFile;
@@ -11,7 +10,6 @@ module.exports = class extends BaseGenerator {
         super(args, opts);
         this.starterProjects = this._getDirectories(path.join(path.join(__dirname, '..', '..'), 'generators'))
             .filter((dir) => dir !== 'app');
-        //   this.option('skip-install');
     }
 
     _getDirectories(source) {

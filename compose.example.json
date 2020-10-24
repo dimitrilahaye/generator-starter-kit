@@ -17,7 +17,8 @@
       "react": {
         "applicationName": "my-frontend-app",
         "typescript": true,
-        "npm": true
+        "npm": true,
+        "sentry": true
       }
     }
   }

@@ -75,7 +75,7 @@ module.exports = class extends Generator {
      */
     writeFile(tpl) {
         const {applicationName} = this.answers;
-        const template = this.destinationPath(applicationName, 'templates', tpl);
+        const template = this.destinationPath(applicationName, '_', tpl);
         const destination = this.destinationPath(applicationName, tpl);
         this.fs.copyTpl(template, destination, this.answers);
     }

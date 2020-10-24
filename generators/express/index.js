@@ -4,25 +4,51 @@ const chalk = require('chalk');
 module.exports = class extends BaseGenerator {
     constructor(args, opts) {
         super(args, opts);
-        // yo starter-kit:react --ts
+        // yo starter-kit:express --ts
         this.option("ts", {
             description: 'Use typescript'
         });
-        // yo starter-kit:react --sentry
-        this.option("sentry", {
-            description: 'Install sentry'
-        });
-        // yo starter-kit:react --npm
+        // yo starter-kit:express --npm
         this.option("npm", {
             description: 'Launch npm install and build after the process'
         });
-        // yo starter-kit:react my-frontend-app
+        // yo starter-kit:express my-frontend-app
         this.argument("applicationName", {
             type: String,
             required: false,
             description: 'The application name'
         });
-        this.root = 'react';
+        this.root = 'express';
+    }
+
+    /**
+     * According to the user choice to use typescript or not,
+     * it copies the directory with the given name from templates subdirectory to project root.
+     * @param {string} dir the name of the directory to copy
+     */
+    _copyTplDirectory(dir) {
+        const { applicationName } = this.answers;
+        const root = this.answers.typescript ? 'typescript' : 'javascript';
+        this.fs.copyTpl(
+            this.destinationPath(applicationName, '_', root, dir),
+            this.destinationPath(applicationName, dir, '..'),
+            this.answers
+        );
+    }
+
+    /**
+     * According to the user choice to use typescript or not,
+     * it copies the file with the given name from templates subdirectory to project root.
+     * @param {string} file the name of the file to copy
+     */
+    _copyTplFile(file) {
+        const { applicationName } = this.answers;
+        const root = this.answers.typescript ? 'typescript' : 'javascript';
+        this.fs.copyTpl(
+            this.destinationPath(applicationName, '_', root, file),
+            this.destinationPath(applicationName, file),
+            this.answers
+        );
     }
 
     initializing() {
@@ -48,13 +74,6 @@ module.exports = class extends BaseGenerator {
                     message: 'Would you like to use typescript?'
                 },
                 {
-                    when: () => !this.options.sentry,
-                    type: 'confirm',
-                    name: 'sentry',
-                    required: true,
-                    message: 'Would you like to use sentry?'
-                },
-                {
                     when: () => !this.options.npm,
                     type: 'confirm',
                     name: 'npm',
@@ -73,9 +92,6 @@ module.exports = class extends BaseGenerator {
         if (this.options.ts) {
             this.answers.typescript = true;
         }
-        if (this.options.sentry) {
-            this.answers.sentry = true;
-        }
         if (this.options.npm) {
             this.answers.npm = true;
         }
@@ -91,35 +107,28 @@ module.exports = class extends BaseGenerator {
             { globOptions: { dot: true, } }
         );
         // Doing templating stuff
-        const typescript = this.answers.typescript;
-        this.fs.copyTpl(
-            this.destinationPath(applicationName, '_', typescript ? 'typescript' : 'javascript', 'src'),
-            this.destinationPath(applicationName, 'src', '..'),
-            this.answers
-        );
+        const { typescript } = this.answers;
         this.fs.copyTpl(
             this.destinationPath(applicationName, '_', 'package.json'),
             this.destinationPath(applicationName, 'package.json'),
             this.answers
         );
         if (typescript) {
-            this.fs.copyTpl(
-                this.destinationPath(applicationName, '_', 'typescript', 'tsconfig.json'),
-                this.destinationPath(applicationName, 'tsconfig.json'),
-                this.answers
-            );
+            this._copyTplDirectory('src');
+            ['tsconfig.json', 'tslint.json'].forEach(file => this._copyTplFile(file));
+        } else {
+            ['bin', 'public', 'routes', 'views'].forEach(dir => this._copyTplDirectory(dir));
+            this._copyTplFile('app.js');
         }
         this.fs.delete(this.destinationPath(applicationName, '_'));
     }
 
     async install() {
         const { rush } = this.getBaseConfiguration();
-        const { npm, sentry, applicationName } = this.answers;
-        if (sentry) {
-            this.npmInstall(['@sentry/react'], { save: true }, { cwd: this.destinationPath(applicationName) });
-        }
+        const { npm } = this.answers;
         if (!rush && npm) {
             this.info(`install ${this.root}`);
+            const { applicationName } = this.answers;
             await this.spawnCommandAsync('npm', ['install'], { cwd: this.destinationPath(applicationName) });
             await this.spawnCommandAsync('npm', ['run', 'build'], { cwd: this.destinationPath(applicationName) });
         }
