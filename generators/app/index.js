@@ -10,6 +10,7 @@ module.exports = class extends BaseGenerator {
         super(args, opts);
         this.starterProjects = this._getDirectories(path.join(path.join(__dirname, '..', '..'), 'generators'))
             .filter((dir) => dir !== 'app');
+        this.root = 'base';
     }
 
     _getDirectories(source) {
@@ -29,19 +30,17 @@ module.exports = class extends BaseGenerator {
      */
     initializing() {
         // Checking the compose.json file
-        if (!this.fs.exists(this.destinationPath('compose.json'))) {
-            this.info('compose.yaml not found. Will launch prompts');
+        if (!this.hasConfigurationFile()) {
+            this.info('compose.json not found. Will launch prompts');
             return;
         }
-        this.info('compose.json found. Writing step begins');
-        const file = fs.readFileSync(this.destinationPath('compose.json'), 'utf8');
-        const conf = JSON.parse(file);
-        this.answers = this.configuration = { ...this.configuration, ...conf };
+        this.initConfigurationFromFile();
         this.isConfigurationFile = true;
         this.getBaseConfiguration().projects.forEach((project) => this.composeWith(
             require.resolve(path.join('..', project)),
-            conf
+            this.configuration
         ));
+        this.info('compose.json found. Writing step begins');
     }
 
     /**
@@ -81,20 +80,6 @@ module.exports = class extends BaseGenerator {
             this.starterProjects = this.starterProjects.filter((project) => this.answers.base.projects.includes(project));
             this._forEachProject((project) => this.composeWith(require.resolve(path.join('..', project)), this.answers));
         }
-    }
-
-    /**
-     * Nothing for now...
-     */
-    configuring() {
-        this.info('Configuring base generator');
-    }
-
-    /**
-     * Nothing for now...
-     */
-    writing() {
-        this.info('Writing base generator');
     }
 
     /**

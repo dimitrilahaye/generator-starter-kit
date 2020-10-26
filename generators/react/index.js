@@ -4,6 +4,9 @@ const chalk = require('chalk');
 module.exports = class extends BaseGenerator {
     constructor(args, opts) {
         super(args, opts);
+        ///////////////////////////////////////////////////////////////////////
+        // options and arguments setting. compose.json will overwrite them.
+        ///////////////////////////////////////////////////////////////////////
         // yo starter-kit:react --ts
         this.option("ts", {
             description: 'Use typescript'
@@ -22,15 +25,19 @@ module.exports = class extends BaseGenerator {
             required: false,
             description: 'The application name'
         });
+        // mandatory, this root name matches with the name of this generator
         this.root = 'react';
     }
 
+    /**
+     * Initialize this boilerplate answers.
+     */
     initializing() {
-        this.info(`initializing ${this.root}`);
-        this.initBoilerplateAnswers();
+        this.initializeBoilerplate();
     }
 
     async prompting() {
+        // check if we already have some configuration for this boilerplate.
         if (!this.getBoilerplatesConfiguration()) {
             this.answers = await this.prompt([
                 {
@@ -66,18 +73,20 @@ module.exports = class extends BaseGenerator {
     }
 
     configuring() {
-        this.info(`Configuring ${this.root}`);
-        if (this.options.applicationName) {
-            this.answers.applicationName = this.options.applicationName;
-        }
-        if (this.options.ts) {
-            this.answers.typescript = true;
-        }
-        if (this.options.sentry) {
-            this.answers.sentry = true;
-        }
-        if (this.options.npm) {
-            this.answers.npm = true;
+        if (!this.getBoilerplatesConfiguration()) {
+            this.info(`Configuring ${this.root}`);
+            if (this.options.applicationName) {
+                this.answers.applicationName = this.options.applicationName;
+            }
+            if (this.options.ts) {
+                this.answers.typescript = true;
+            }
+            if (this.options.sentry) {
+                this.answers.sentry = true;
+            }
+            if (this.options.npm) {
+                this.answers.npm = true;
+            }
         }
     }
 
@@ -113,8 +122,9 @@ module.exports = class extends BaseGenerator {
     }
 
     async install() {
-        const { rush } = this.getBaseConfiguration();
+        const { rush } = this.getBaseConfiguration() || {};
         const { npm, sentry, applicationName } = this.answers;
+        // FIXME: conflict with main generator {rush} option.
         if (sentry) {
             this.npmInstall(['@sentry/react'], { save: true }, { cwd: this.destinationPath(applicationName) });
         }
