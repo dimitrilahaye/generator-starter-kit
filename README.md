@@ -85,4 +85,5 @@ yo starter-kit:react my-app-name --npm --sentry --ts
 
 # Configuration
 
-> If you want to skip yeoman prompting, copy compose.json.example into your project folder, rename it `compose.json` then update it according to your needs.
+If you want to skip yeoman prompting, copy compose.json.example into your project folder, rename it `compose.json` then update it according to your needs.
+> compose.json will overwrite options and arguments passed through the CLI.
